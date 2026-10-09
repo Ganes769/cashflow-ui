@@ -169,7 +169,7 @@ function IntegrationsSection({ integrations }: { integrations: Integration[] }) 
                   ['Database', db.data?.status === 'ok' ? db.data.database : db.error ? 'Unreachable' : 'Checking…'],
                 ]
               : [
-                  ['Tenant', 'Brightline Facilities Ltd'],
+                  ['Tenant', 'Not connected'],
                   ['Sync scope', 'Invoices, contacts, payments'],
                   ['Sync frequency', 'Every 15 minutes'],
                   ['Last sync', configuring?.lastSync ? formatDateTime(configuring.lastSync) : '—'],

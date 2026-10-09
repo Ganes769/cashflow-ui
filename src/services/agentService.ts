@@ -2,8 +2,8 @@ import type { AgentActivity, AgentEventKind, AgentTool, Investigation, Investiga
 import { daysOverdue, demoNow } from '@/lib/dates'
 import { formatMoney } from '@/lib/format'
 import { INVESTIGATION_STEPS, investigationOutcomes, type InvestigationOutcome } from '@/data/investigations'
-import { NotFoundError, db, latency, nextId } from './mockDb'
-import { toRow } from './invoiceService'
+import { db, latency, nextId } from './mockDb'
+import { ensureDeskInvoice, toRow } from './invoiceService'
 
 /**
  * UI-only simulation of the collections agent. It is NOT an LLM: it replays a fixed sequence
@@ -23,8 +23,24 @@ function stageForStep(stepIndex: number): Investigation['stage'] {
 
 /** Rule-based outcome for invoices without a pre-written investigation. */
 function genericOutcome(invoiceId: string): InvestigationOutcome {
-  const invoice = db.invoices.find((i) => i.id === invoiceId)!
-  const customer = db.customers.find((c) => c.id === invoice.customerId)!
+  const invoice = db.invoices.find((i) => i.id === invoiceId)
+  const customer = invoice ? db.customers.find((c) => c.id === invoice.customerId || c.name === toRow(invoice).customerName) : undefined
+  if (!invoice || !customer) {
+    return {
+      likelyReason: 'unknown',
+      finding: 'No blocking issue was found in the Xero record. A person should confirm the next step with the customer.',
+      confidence: 48,
+      evidence: [],
+      recommendation: {
+        title: 'Review this invoice with the customer',
+        reason: 'The desk could not match a customer record to explain the delay.',
+        risk: 'medium',
+        confidence: 48,
+        approvalMode: 'approve',
+        draft: 'Please confirm this invoice has been received and share an expected payment date.',
+      },
+    }
+  }
   const late = daysOverdue(invoice.dueDate)
   const withinPattern = late <= customer.averagePaymentDelayDays + 3
   const recommendation: RecommendedAction = withinPattern
@@ -115,13 +131,12 @@ function complete(investigation: Investigation, runId: string) {
 /** Future: POST /api/agent/investigations { invoiceId } */
 export async function startInvestigation(invoiceId: string): Promise<Investigation> {
   await latency(150)
-  const invoice = db.invoices.find((i) => i.id === invoiceId)
-  if (!invoice) throw new NotFoundError('Invoice', invoiceId)
-  if (active.has(invoiceId)) return db.investigations.find((i) => i.invoiceId === invoiceId)!
+  const invoice = await ensureDeskInvoice(invoiceId)
+  if (active.has(invoice.id)) return db.investigations.find((i) => i.invoiceId === invoice.id)!
 
   const startedAt = demoNow()
   const investigation: Investigation = {
-    invoiceId,
+    invoiceId: invoice.id,
     state: 'running',
     stage: 'triage',
     startedAt,
@@ -135,11 +150,11 @@ export async function startInvestigation(invoiceId: string): Promise<Investigati
     evidence: [],
     recommendation: null,
   }
-  db.investigations = [investigation, ...db.investigations.filter((i) => i.invoiceId !== invoiceId)]
+  db.investigations = [investigation, ...db.investigations.filter((i) => i.invoiceId !== invoice.id)]
   invoice.aiStatus = 'investigating'
 
   const runId = nextId('run')
-  db.agentRuns.unshift({ id: runId, invoiceId, startedAt, durationSeconds: 0, status: 'running', summary: 'Investigation in progress', toolCalls: 0 })
+  db.agentRuns.unshift({ id: runId, invoiceId: invoice.id, startedAt, durationSeconds: 0, status: 'running', summary: 'Investigation in progress', toolCalls: 0 })
   db.agentStats.runsToday += 1
   event(invoice.invoiceNumber, 'action', 'Agent started investigation')
 
@@ -170,7 +185,7 @@ export async function startInvestigation(invoiceId: string): Promise<Investigati
       }, STEP_MS * (index + 1)),
     )
   })
-  active.set(invoiceId, timers)
+  active.set(invoice.id, timers)
   return investigation
 }
 
@@ -178,16 +193,16 @@ export async function startInvestigation(invoiceId: string): Promise<Investigati
 export async function getInvestigation(invoiceId: string): Promise<Investigation | null> {
   await latency(60)
   const found = db.investigations.find((i) => i.invoiceId === invoiceId)
-  return found ? { ...structuredClone(found), live: active.has(invoiceId) } : null
+  return found ? { ...structuredClone(found), live: active.has(found.invoiceId) } : null
 }
 
 /** Future: GET /api/agent/investigations */
 export async function getInvestigations(): Promise<InvestigationRow[]> {
   await latency()
   return db.investigations
-    .map((investigation) => {
-      const invoice = db.invoices.find((i) => i.id === investigation.invoiceId)!
-      return { ...structuredClone(investigation), invoice: toRow(invoice) }
+    .flatMap((investigation) => {
+      const invoice = db.invoices.find((i) => i.id === investigation.invoiceId)
+      return invoice ? [{ ...structuredClone(investigation), invoice: toRow(invoice) }] : []
     })
     .sort((a, b) => b.startedAt.localeCompare(a.startedAt))
 }
@@ -197,9 +212,11 @@ export async function getAgentActivity(): Promise<AgentActivity> {
   await latency()
   return {
     stats: { ...db.agentStats },
-    runs: db.agentRuns.map((run) => {
-      const invoice = toRow(db.invoices.find((i) => i.id === run.invoiceId)!)
-      return { ...run, invoiceNumber: invoice.invoiceNumber, customerName: invoice.customerName }
+    runs: db.agentRuns.flatMap((run) => {
+      const found = db.invoices.find((i) => i.id === run.invoiceId)
+      if (!found) return []
+      const invoice = toRow(found)
+      return [{ ...run, invoiceNumber: invoice.invoiceNumber, customerName: invoice.customerName }]
     }),
     events: [...db.agentEvents],
   }

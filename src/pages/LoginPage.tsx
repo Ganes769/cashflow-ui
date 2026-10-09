@@ -59,8 +59,8 @@ export function LoginPage() {
   const busy = submitting || connecting
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
-      <aside className="relative hidden overflow-hidden bg-primary text-primary-foreground lg:flex lg:flex-col lg:justify-between lg:p-10">
+    <div className="grid min-h-screen bg-background lg:grid-cols-2">
+      <aside className="relative m-3 hidden overflow-hidden rounded-3xl bg-primary text-primary-foreground neo-raised lg:flex lg:flex-col lg:justify-between lg:p-10">
         <div className="pointer-events-none absolute -right-16 top-24 size-72 rounded-full bg-lime/20 blur-3xl" aria-hidden />
         <div className="pointer-events-none absolute -left-10 bottom-10 size-64 rounded-full bg-peach/20 blur-3xl" aria-hidden />
         <div className="relative flex items-center gap-2">
@@ -73,14 +73,14 @@ export function LoginPage() {
         </div>
         <div className="relative max-w-md">
           <p className="text-[12px] font-semibold uppercase tracking-wider text-primary-foreground/55">Collections desk</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">Get paid faster, without an agent talking to customers on its own.</h2>
+          <h2 className="font-display mt-3 text-3xl font-semibold tracking-[-0.03em]">Get paid faster, without an agent talking to customers on its own.</h2>
           <ul className="mt-8 space-y-3 text-[14px] text-primary-foreground/75">
             <li>Human approval before every outbound email.</li>
             <li>Findings labelled as hypotheses, not facts.</li>
             <li>Connect Xero when you are ready to pull live contacts.</li>
           </ul>
         </div>
-        <p className="relative text-[12px] text-primary-foreground/45">CashFlow OS · Brightline Facilities</p>
+        <p className="relative text-[12px] text-primary-foreground/45">CashFlow OS · accounts receivable</p>
       </aside>
 
       <main className="relative flex flex-col bg-background">
@@ -89,8 +89,8 @@ export function LoginPage() {
         </header>
 
         <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
-          <div className="marketing-rise w-full max-w-[400px]">
-            <h1 className="text-[1.75rem] font-semibold tracking-[-0.03em]">Log in</h1>
+          <div className="marketing-rise w-full max-w-[400px] rounded-3xl bg-card p-7 neo-raised">
+            <h1 className="font-display text-[1.75rem] font-semibold tracking-[-0.03em]">Log in</h1>
             <p className="mt-1.5 text-[14px] text-muted-foreground">Use your work email, or continue with Xero.</p>
 
             <form className="mt-7 space-y-4" onSubmit={(event) => void onEmailSubmit(event)}>

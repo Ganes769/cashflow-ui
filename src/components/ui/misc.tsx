@@ -22,7 +22,7 @@ function AvatarFallback({ className, ...props }: React.ComponentProps<typeof Ava
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
-      className={cn('flex size-full items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground', className)}
+      className={cn('flex size-full items-center justify-center rounded-full bg-card text-xs font-semibold text-foreground neo-inset-sm', className)}
       {...props}
     />
   )
@@ -30,7 +30,7 @@ function AvatarFallback({ className, ...props }: React.ComponentProps<typeof Ava
 
 function Progress({ className, value, indicatorClassName, ...props }: React.ComponentProps<typeof ProgressPrimitive.Root> & { indicatorClassName?: string }) {
   return (
-    <ProgressPrimitive.Root data-slot="progress" className={cn('relative h-2 w-full overflow-hidden rounded-full bg-bar', className)} {...props}>
+    <ProgressPrimitive.Root data-slot="progress" className={cn('relative h-2.5 w-full overflow-hidden rounded-full bg-card neo-inset-sm', className)} {...props}>
       <ProgressPrimitive.Indicator
         data-slot="progress-indicator"
         className={cn('h-full w-full flex-1 rounded-full bg-lime transition-transform', indicatorClassName)}
@@ -45,7 +45,7 @@ function Switch({ className, ...props }: React.ComponentProps<typeof SwitchPrimi
     <SwitchPrimitive.Root
       data-slot="switch"
       className={cn(
-        'peer inline-flex h-5 w-9 shrink-0 items-center rounded-full border border-transparent shadow-xs outline-none transition-all focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-lime data-[state=unchecked]:bg-input',
+        'peer inline-flex h-5 w-9 shrink-0 items-center rounded-full border-transparent outline-none neo-inset-sm transition-all focus-visible:ring-[3px] focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-lime data-[state=unchecked]:bg-card',
         className,
       )}
       {...props}

@@ -1,47 +1,61 @@
-import { agentActions, agentDailyStats, agentEvents, agentRuns } from '@/data/agentRuns'
-import { approvals } from '@/data/approvals'
-import { communications } from '@/data/communications'
-import { customers } from '@/data/customers'
-import { followUps } from '@/data/followUps'
-import { investigations } from '@/data/investigations'
-import { invoices } from '@/data/invoices'
-import { payments } from '@/data/payments'
-import { auditLog, notifications } from '@/data/settings'
+import type {
+  AgentAction,
+  AgentDailyStats,
+  AgentEvent,
+  AgentRun,
+  Approval,
+  AuditLogEntry,
+  Communication,
+  Customer,
+  FollowUp,
+  Investigation,
+  Invoice,
+  Notification,
+  Payment,
+} from "@/types";
 
 /**
- * In-memory stand-in for the backend database. Services read and mutate this so approvals,
- * rejections and simulated agent runs persist for the session. It resets on page reload.
+ * Session-only store for approvals, investigations and follow-ups created on this desk.
+ * Receivables themselves come from synced Xero — this is not a seed database.
  */
 export const db = {
-  invoices: structuredClone(invoices),
-  customers: structuredClone(customers),
-  payments: structuredClone(payments),
-  communications: structuredClone(communications),
-  investigations: structuredClone(investigations),
-  approvals: structuredClone(approvals),
-  followUps: structuredClone(followUps),
-  agentRuns: structuredClone(agentRuns),
-  agentActions: structuredClone(agentActions),
-  agentEvents: structuredClone(agentEvents),
-  agentStats: structuredClone(agentDailyStats),
-  auditLog: structuredClone(auditLog),
-  notifications: structuredClone(notifications),
-}
+  invoices: [] as Invoice[],
+  customers: [] as Customer[],
+  payments: [] as Payment[],
+  communications: [] as Communication[],
+  investigations: [] as Investigation[],
+  approvals: [] as Approval[],
+  followUps: [] as FollowUp[],
+  agentRuns: [] as AgentRun[],
+  agentActions: [] as AgentAction[],
+  agentEvents: [] as AgentEvent[],
+  agentStats: {
+    runsToday: 0,
+    successful: 0,
+    waiting: 0,
+    failed: 0,
+    automatedActions: 0,
+  } satisfies AgentDailyStats,
+  auditLog: [] as AuditLogEntry[],
+  notifications: [] as Notification[],
+};
 
-let sequence = 0
+let sequence = 0;
 export function nextId(prefix: string): string {
-  sequence += 1
-  return `${prefix}_${Date.now().toString(36)}${sequence}`
+  sequence += 1;
+  return `${prefix}_${Date.now().toString(36)}${sequence}`;
 }
 
 /** Simulated network latency so loading states are exercised. */
 export function latency(ms = 250): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms + Math.random() * 150))
+  return new Promise((resolve) =>
+    setTimeout(resolve, ms + Math.random() * 150),
+  );
 }
 
 export class NotFoundError extends Error {
   constructor(entity: string, id: string) {
-    super(`${entity} ${id} was not found`)
-    this.name = 'NotFoundError'
+    super(`${entity} ${id} was not found`);
+    this.name = "NotFoundError";
   }
 }

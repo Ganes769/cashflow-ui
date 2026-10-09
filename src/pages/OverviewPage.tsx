@@ -45,7 +45,7 @@ function greeting(name: string) {
   return `${part}, ${name}`
 }
 
-const cardHover = 'transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-28px_rgba(20,20,20,0.4)]'
+const cardHover = 'h-full'
 
 const RANGES: Array<{ value: CollectionRange; label: string }> = [
   { value: '7d', label: '7D' },
@@ -56,7 +56,7 @@ const RANGES: Array<{ value: CollectionRange; label: string }> = [
 
 function Kpis() {
   const { data, isLoading, error, refetch } = useOverview()
-  if (error) return <ErrorState error={error} onRetry={() => refetch()} className="rounded-xl border bg-card" />
+  if (error) return <ErrorState error={error} onRetry={() => refetch()} className="rounded-2xl bg-card neo-raised" />
   const d = data
   const loading = isLoading || !d
   const cards = [
@@ -212,7 +212,7 @@ function RiskDistribution() {
             </div>
             <ul className="grid grid-cols-2 gap-2">
               {data.map((b) => (
-                <li key={b.key} className="rounded-lg border px-3 py-2">
+                <li key={b.key} className="rounded-xl bg-card px-3 py-2 neo-inset-sm">
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <span className="size-2 rounded-full" style={{ background: RISK_COLOR[b.key] }} aria-hidden />
                     {b.label}
@@ -236,7 +236,7 @@ function AttentionItem({ approval, onOpen }: { approval: ApprovalWithInvoice; on
   const reviewRequired = approval.action.approvalMode === 'review_required'
   return (
     <li className="flex flex-col gap-3 px-5 py-4 lg:flex-row lg:items-center">
-      <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-lg', reviewRequired ? 'bg-coral-soft text-coral' : 'bg-peach-soft text-peach-strong')}>
+      <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-xl neo-raised-sm', reviewRequired ? 'bg-coral-soft text-coral' : 'bg-peach-soft text-peach-strong')}>
         {reviewRequired ? <FileWarning className="size-4" aria-hidden /> : <CheckCheck className="size-4" aria-hidden />}
       </span>
       <div className="min-w-0 flex-1">
@@ -349,7 +349,7 @@ function DeskBriefing() {
         {chips.map((chip) => {
           const Icon = chip.icon
           return (
-            <p key={chip.label} className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold', chip.tone)}>
+            <p key={chip.label} className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold neo-raised-sm', chip.tone)}>
               <Icon className={cn('size-3.5', chip.label.startsWith('Xero live') && !reduced && 'marketing-pulse')} aria-hidden />
               {chip.label}
             </p>
@@ -387,7 +387,7 @@ function UpcomingFollowUps() {
         <ul className="divide-y">
           {items.map((item) => (
             <li key={item.id} className="flex items-start gap-3 px-5 py-3.5">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sun-soft text-sun-strong">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sun-soft text-sun-strong neo-raised-sm">
                 <CalendarClock className="size-3.5" aria-hidden />
               </span>
               <div className="min-w-0 flex-1">
@@ -464,8 +464,8 @@ function HowItWorks() {
           {FLOW.map((step, i) => {
             const Icon = step.icon
             return (
-              <li key={step.label} className="relative flex items-center gap-3 rounded-xl border bg-muted/40 px-3 py-3">
-                <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-lg', i === 3 ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground/70')}>
+              <li key={step.label} className="relative flex items-center gap-3 rounded-xl bg-card px-3 py-3 neo-inset-sm">
+                <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-lg neo-raised-sm', i === 3 ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground/70')}>
                   <Icon className="size-4" aria-hidden />
                 </span>
                 <span>

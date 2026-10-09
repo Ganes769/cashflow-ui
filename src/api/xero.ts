@@ -10,7 +10,7 @@ import {
   XERO_SYNCED_INVOICES_PATH,
   XERO_WEBHOOK_EVENTS_PATH,
 } from './config'
-import { startXeroLogin } from './auth'
+import { fetchSanitizedAuthorizeUrl, startXeroLogin } from './auth'
 import type {
   DbTest,
   XeroContactsResponse,
@@ -26,6 +26,8 @@ import type {
 const LONG_PULL = { timeout: 120_000 }
 
 export const xeroApi = {
+  /** GET /xero/login/url — never call GET /xero/login from the SPA (it redirects). */
+  loginUrl: fetchSanitizedAuthorizeUrl,
   status: async (): Promise<XeroStatus> => {
     const { data } = await apiClient.get<XeroStatus>(XERO_STATUS_PATH, {
       headers: { Accept: 'application/json' },

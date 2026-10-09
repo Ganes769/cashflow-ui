@@ -14,8 +14,8 @@ export function XeroLiveBadge({ className, compact = false }: { className?: stri
     <span className={cn('inline-flex items-center gap-2 text-[12px]', className)}>
       <span
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold',
-          live ? 'bg-lime-soft text-lime-strong' : 'bg-muted text-muted-foreground',
+          'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold neo-raised-sm',
+          live ? 'bg-lime-soft text-lime-strong' : 'bg-card text-muted-foreground',
         )}
       >
         <span className={cn('size-1.5 rounded-full', live ? 'bg-lime-strong' : 'bg-muted-foreground')} aria-hidden />

@@ -1,11 +1,11 @@
-import type { Invoice, InvoiceDetail, InvoiceFilter, InvoiceRow, SearchResult } from '@/types'
+import type { Customer, Invoice, InvoiceDetail, InvoiceFilter, InvoiceRow, SearchResult } from '@/types'
 import { xeroApi } from '@/api/xero'
 import { mapSyncedInvoice, mapXeroContactToCustomer, syncedContactToXero } from '@/lib/xeroMap'
 import { daysOverdue } from '@/lib/dates'
 import { formatMoney } from '@/lib/format'
 import { appPath } from '@/lib/paths'
 import { ApiError } from '@/api/client'
-import { NotFoundError, db, latency } from './mockDb'
+import { NotFoundError, db } from './mockDb'
 
 export const HIGH_VALUE_THRESHOLD = 5_000
 
@@ -21,9 +21,48 @@ export function toRow(invoice: Invoice): InvoiceRow {
   const customer = db.customers.find((c) => c.id === invoice.customerId)
   return {
     ...invoice,
-    customerName: customer?.name ?? 'Unknown customer',
+    customerName: customer?.name ?? ('customerName' in invoice ? String((invoice as InvoiceRow).customerName) : 'Unknown customer'),
     daysOverdue: isOverdue(invoice) ? daysOverdue(invoice.dueDate) : 0,
   }
+}
+
+export function stubCustomerFromRow(row: InvoiceRow): Customer {
+  return {
+    id: row.customerId || row.id,
+    name: row.customerName,
+    legalName: row.customerName,
+    companyNumber: '',
+    vatNumber: '',
+    industry: 'Xero contact',
+    customerSince: new Date().getFullYear(),
+    contactName: row.customerName,
+    contactEmail: '',
+    accountsEmail: '',
+    phone: '',
+    website: '',
+    address: { line1: '', city: '', postcode: '', country: 'United Kingdom' },
+    paymentTermsDays: row.paymentTermsDays,
+    requiresPo: Boolean(row.poReference),
+    poOnFile: row.poReference,
+    averagePaymentDelayDays: row.daysOverdue,
+    lifetimeInvoiceCount: 1,
+    disputesCount: row.status === 'disputed' ? 1 : 0,
+    riskLevel: row.riskLevel,
+    lastPaymentDate: row.paidDate ?? null,
+  }
+}
+
+/** Copy a live Xero invoice into the session store so investigations and approvals can attach to it. */
+export async function ensureDeskInvoice(invoiceId: string): Promise<Invoice> {
+  const existing = db.invoices.find((i) => i.id === invoiceId || i.invoiceNumber === invoiceId)
+  if (existing) return existing
+  const live = (await liveInvoiceRows()).find((row) => row.id === invoiceId || row.invoiceNumber === invoiceId)
+  if (!live) throw new NotFoundError('Invoice', invoiceId)
+  db.invoices.unshift(live)
+  if (!db.customers.some((c) => c.id === live.customerId || c.name === live.customerName)) {
+    db.customers.unshift(stubCustomerFromRow(live))
+  }
+  return live
 }
 
 const FILTERS: Record<InvoiceFilter, (invoice: Invoice) => boolean> = {
@@ -101,27 +140,17 @@ export async function getInvoice(id: string): Promise<InvoiceDetail> {
         riskLevel: live.riskLevel,
         lastPaymentDate: live.paidDate ?? null,
       },
-      investigation: db.investigations.find((i) => i.invoiceId === id) ?? null,
-      approval: db.approvals.find((a) => a.invoiceId === id && a.status === 'pending') ?? db.approvals.find((a) => a.invoiceId === id) ?? null,
-      timeline: db.communications.filter((c) => c.invoiceId === id).sort((a, b) => a.at.localeCompare(b.at)),
-      followUps: db.followUps.filter((f) => f.invoiceId === id),
+      investigation: db.investigations.find((i) => i.invoiceId === live.id || i.invoiceId === id) ?? null,
+      approval:
+        db.approvals.find((a) => (a.invoiceId === live.id || a.invoiceId === id) && a.status === 'pending') ??
+        db.approvals.find((a) => a.invoiceId === live.id || a.invoiceId === id) ??
+        null,
+      timeline: db.communications.filter((c) => c.invoiceId === live.id || c.invoiceId === id).sort((a, b) => a.at.localeCompare(b.at)),
+      followUps: db.followUps.filter((f) => f.invoiceId === live.id || f.invoiceId === id),
     }
   }
 
-  await latency()
-  const invoice = db.invoices.find((i) => i.id === id)
-  if (!invoice) throw new NotFoundError('Invoice', id)
-  const customer = db.customers.find((c) => c.id === invoice.customerId)
-  if (!customer) throw new NotFoundError('Customer', invoice.customerId)
-  const approvals = db.approvals.filter((a) => a.invoiceId === id)
-  return {
-    invoice: toRow(invoice),
-    customer,
-    investigation: db.investigations.find((i) => i.invoiceId === id) ?? null,
-    approval: approvals.find((a) => a.status === 'pending') ?? approvals.at(-1) ?? null,
-    timeline: db.communications.filter((c) => c.invoiceId === id).sort((a, b) => a.at.localeCompare(b.at)),
-    followUps: db.followUps.filter((f) => f.invoiceId === id),
-  }
+  throw new NotFoundError('Invoice', id)
 }
 
 export async function search(query: string): Promise<SearchResult[]> {

@@ -11,9 +11,9 @@ export function AppLayout() {
   }, [pathname])
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Sidebar />
-      <div className="lg:pl-60">
+      <div className="lg:pl-[16.25rem]">
         <Topbar />
         <main className="mx-auto max-w-[1440px] px-4 py-6 sm:px-6">
           <Suspense fallback={<LoadingBlock className="h-96" />}>

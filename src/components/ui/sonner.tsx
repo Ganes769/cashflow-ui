@@ -7,7 +7,7 @@ function Toaster(props: ToasterProps) {
       position="bottom-right"
       toastOptions={{
         classNames: {
-          toast: 'rounded-xl border border-border bg-card text-foreground shadow-lg text-[13px]',
+          toast: 'rounded-2xl bg-card text-foreground neo-raised text-[13px]',
           description: 'text-muted-foreground',
         },
       }}

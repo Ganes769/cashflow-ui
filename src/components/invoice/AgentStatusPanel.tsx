@@ -85,7 +85,7 @@ export function AgentStatusPanel({ investigation, followUps }: { investigation: 
                   <span
                     className={cn(
                       'z-[1] flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold',
-                      state === 'done' && 'bg-lime text-[#1c2a0c]',
+                      state === 'done' && 'bg-lime text-white',
                       state === 'current' && 'bg-primary text-primary-foreground',
                       state === 'upcoming' && 'border bg-card text-muted-foreground',
                     )}

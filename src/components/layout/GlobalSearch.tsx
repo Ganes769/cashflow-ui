@@ -64,12 +64,12 @@ export function GlobalSearch() {
           }
         }}
         placeholder="Search invoices, customers…"
-        className="h-9 w-full rounded-lg border border-input bg-card pl-9 pr-12 text-[13px] shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/40 [&::-webkit-search-cancel-button]:hidden"
+        className="h-10 w-full rounded-2xl bg-card pl-9 pr-12 text-[13px] outline-none neo-inset-sm placeholder:text-muted-foreground focus-visible:ring-[3px] focus-visible:ring-ring/35 [&::-webkit-search-cancel-button]:hidden"
       />
-      <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded border bg-muted px-1.5 text-[10.5px] font-medium text-muted-foreground sm:block">⌘K</kbd>
+      <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded-md bg-card px-1.5 text-[10.5px] font-medium text-muted-foreground neo-raised-sm sm:block">⌘K</kbd>
 
       {showResults && (
-        <div id={listId} role="listbox" className="absolute left-0 right-0 top-11 z-50 overflow-hidden rounded-xl border bg-popover p-1 shadow-lg">
+        <div id={listId} role="listbox" className="absolute left-0 right-0 top-12 z-50 overflow-hidden rounded-2xl bg-popover p-1 neo-raised">
           {results.length === 0 ? (
             <p className="flex items-center gap-2 px-3 py-6 text-center text-[13px] text-muted-foreground">
               {isFetching ? <Loader2 className="mx-auto size-4 animate-spin" /> : <span className="mx-auto">No invoices or customers match “{query}”</span>}

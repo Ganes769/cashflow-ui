@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 export function usePrefersReducedMotion() {
@@ -13,35 +13,11 @@ export function usePrefersReducedMotion() {
   return reduced
 }
 
-/** Plays a rise animation the first time the block enters the viewport. */
+/** Entrance motion without hiding content first. */
 export function Reveal({ children, delay = 0, className }: { children: ReactNode; delay?: number; className?: string }) {
   const reduced = usePrefersReducedMotion()
-  const ref = useRef<HTMLDivElement>(null)
-  const [shown, setShown] = useState(reduced)
-
-  useEffect(() => {
-    if (reduced) return
-    const el = ref.current
-    if (!el) return
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setShown(true)
-          io.disconnect()
-        }
-      },
-      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' },
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [reduced])
-
   return (
-    <div
-      ref={ref}
-      className={cn(shown && !reduced && 'ui-rise', !shown && !reduced && 'ui-rise-pending', className)}
-      style={shown && !reduced ? { animationDelay: `${delay}ms` } : undefined}
-    >
+    <div className={cn(!reduced && 'ui-rise', className)} style={reduced ? undefined : { animationDelay: `${delay}ms` }}>
       {children}
     </div>
   )

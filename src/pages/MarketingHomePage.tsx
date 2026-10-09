@@ -39,24 +39,11 @@ const NAV = [
 function MeshBackdrop() {
   const reduced = usePrefersReducedMotion()
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+    <div className="pointer-events-none absolute inset-x-0 top-24 bottom-0 overflow-hidden" aria-hidden>
+      <div className={cn('absolute -left-24 top-32 size-[22rem] rounded-full bg-lime/15 blur-3xl', !reduced && 'marketing-orb')} />
       <div
-        className="absolute inset-0 opacity-[0.35]"
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, rgb(20 20 20 / 0.045) 1px, transparent 1px), linear-gradient(to bottom, rgb(20 20 20 / 0.045) 1px, transparent 1px)',
-          backgroundSize: '56px 56px',
-          maskImage: 'radial-gradient(ellipse 80% 55% at 50% 0%, #000 35%, transparent 100%)',
-        }}
-      />
-      <div className={cn('absolute -left-24 -top-32 size-[28rem] rounded-full bg-lime/25 blur-3xl', !reduced && 'marketing-orb')} />
-      <div
-        className={cn('absolute -right-16 top-24 size-[22rem] rounded-full bg-peach/20 blur-3xl', !reduced && 'marketing-orb')}
+        className={cn('absolute -right-28 top-[32rem] size-[18rem] rounded-full bg-primary/10 blur-3xl', !reduced && 'marketing-orb')}
         style={reduced ? undefined : { animationDelay: '-4s' }}
-      />
-      <div
-        className={cn('absolute bottom-0 left-1/3 size-[18rem] rounded-full bg-sun/25 blur-3xl', !reduced && 'marketing-orb')}
-        style={reduced ? undefined : { animationDelay: '-8s' }}
       />
     </div>
   )
@@ -84,67 +71,71 @@ function ProductNav() {
   }, [open])
 
   return (
-    <header
-      className={cn(
-        'sticky top-0 z-40 border-b transition-colors duration-300',
-        scrolled || open ? 'border-border bg-background/90 backdrop-blur' : 'border-transparent bg-background/70 backdrop-blur',
-      )}
-    >
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
-        <Logo to="/" />
-        <nav className="hidden items-center gap-6 text-[13.5px] font-medium text-muted-foreground md:flex" aria-label="Product">
-          {NAV.map((item) => (
-            <a key={item.href} href={item.href} className="transition-colors hover:text-foreground">
-              {item.label}
-            </a>
-          ))}
-        </nav>
-        <div className="ml-auto flex items-center gap-2">
-          {isAuthenticated ? (
-            <Button asChild>
-              <Link to={APP}>
-                Open desk <ArrowRight />
-              </Link>
-            </Button>
-          ) : (
-            <>
-              <Button variant="ghost" asChild className="hidden sm:inline-flex">
-                <a href="#how">How it works</a>
-              </Button>
-              <Button asChild>
-                <Link to={LOGIN}>Log in</Link>
-              </Button>
-            </>
+    <header className="sticky top-0 z-40 isolate bg-background">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div
+          className={cn(
+            'mt-3 flex h-14 items-center gap-4 overflow-hidden rounded-2xl bg-card pl-4 pr-2 neo-raised-sm sm:gap-6 sm:pl-5 sm:pr-2.5',
+            scrolled || open ? 'neo-convex' : '',
           )}
-          <Button variant="ghost" size="icon" className="md:hidden" aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen((v) => !v)}>
-            {open ? <X /> : <Menu />}
-            <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
-          </Button>
+        >
+          <Logo to="/" />
+          <nav className="hidden min-w-0 items-center gap-6 text-[13.5px] font-medium text-muted-foreground md:flex" aria-label="Product">
+            {NAV.map((item) => (
+              <a key={item.href} href={item.href} className="transition-colors hover:text-foreground">
+                {item.label}
+              </a>
+            ))}
+          </nav>
+          <div className="relative z-10 ml-auto flex shrink-0 items-center gap-2">
+            {isAuthenticated ? (
+              <Button asChild>
+                <Link to={APP}>
+                  Open desk <ArrowRight />
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" asChild className="hidden sm:inline-flex">
+                  <a href="#how">How it works</a>
+                </Button>
+                <Button asChild className="relative z-10">
+                  <Link to={LOGIN}>Log in</Link>
+                </Button>
+              </>
+            )}
+            <Button variant="ghost" size="icon" className="md:hidden" aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen((v) => !v)}>
+              {open ? <X /> : <Menu />}
+              <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
+            </Button>
+          </div>
         </div>
       </div>
       {open && (
-        <nav id="mobile-nav" className="border-t bg-background/95 px-4 py-3 md:hidden" aria-label="Product">
-          {NAV.map((item) => (
-            <a key={item.href} href={item.href} className="block rounded-lg px-2 py-2.5 text-[14px] font-medium hover:bg-accent" onClick={() => setOpen(false)}>
-              {item.label}
-            </a>
-          ))}
+        <nav id="mobile-nav" className="mx-auto mt-2 max-w-6xl px-4 sm:px-6 md:hidden" aria-label="Product">
+          <div className="rounded-2xl bg-card px-4 py-3 neo-inset-sm">
+            {NAV.map((item) => (
+              <a key={item.href} href={item.href} className="block rounded-lg px-2 py-2.5 text-[14px] font-medium hover:bg-accent" onClick={() => setOpen(false)}>
+                {item.label}
+              </a>
+            ))}
+          </div>
         </nav>
       )}
     </header>
   )
 }
 
-const LIVE_FEED = [
-  { time: '10:52', text: 'Investigating INV-48256 · Bright Office Ltd' },
-  { time: '10:42', text: 'Waiting for approval · Northstar Ltd' },
-  { time: '10:20', text: 'Friendly reminder sent · Copperleaf Hospitality' },
-  { time: '09:58', text: 'Dispute paused for a person · Greenfield Services' },
+const DESK_FEED = [
+  { step: '01', text: 'Read invoices and contacts from Xero' },
+  { step: '02', text: 'Investigate why an invoice is still unpaid' },
+  { step: '03', text: 'Draft the next action and wait for you' },
+  { step: '04', text: 'Follow up until payment lands' },
 ]
 
 function HeroMock() {
   const reduced = usePrefersReducedMotion()
-  const { item: feed, index } = useCycle(LIVE_FEED, 2800)
+  const { item: feed, index } = useCycle(DESK_FEED, 2800)
   const bars = [
     { h: 42, fill: 'bg-lime' },
     { h: 58, fill: 'bg-peach' },
@@ -155,18 +146,17 @@ function HeroMock() {
   ]
   return (
     <div className={cn('relative', !reduced && 'marketing-float')}>
-      <div className={cn('absolute -inset-3 rounded-[1.35rem] bg-lime/15 blur-xl', !reduced && 'marketing-glow')} aria-hidden />
-      <div className="relative overflow-hidden rounded-2xl border bg-card shadow-[0_24px_60px_-28px_rgba(20,20,20,0.35)]">
-        <div className="flex items-center justify-between border-b px-4 py-2.5">
+      <div className="relative overflow-hidden rounded-3xl bg-card neo-raised">
+        <div className="flex items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-2">
             <span className="flex gap-1" aria-hidden>
               <span className="size-1.5 rounded-full bg-coral/80" />
               <span className="size-1.5 rounded-full bg-sun/90" />
               <span className="size-1.5 rounded-full bg-lime" />
             </span>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Brightline Facilities · receivables</p>
+            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Collections desk · your Xero book</p>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-sun-soft px-2 py-0.5 text-[11px] font-semibold text-sun-strong">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-sun-soft px-2 py-0.5 text-[11px] font-semibold text-sun-strong neo-raised-sm">
             <span className={cn('size-1.5 rounded-full bg-sun', !reduced && 'marketing-pulse')} aria-hidden />
             Agent watching
           </span>
@@ -175,13 +165,13 @@ function HeroMock() {
           {!reduced && <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-10 bg-gradient-to-b from-lime/20 to-transparent ui-scan" aria-hidden />}
           <div className="grid gap-3 p-4 sm:grid-cols-3">
             {[
-              { label: 'Outstanding', value: '£128,450', tone: '' },
-              { label: 'Overdue', value: '£74,820', tone: 'text-peach-strong' },
-              { label: 'Recovered this month', value: '£32,400', tone: 'text-lime-strong' },
+              { label: 'Outstanding', tone: '' },
+              { label: 'Overdue', tone: 'text-peach-strong' },
+              { label: 'Recovered this month', tone: 'text-lime-strong' },
             ].map((kpi) => (
-              <div key={kpi.label} className="rounded-xl border bg-muted/40 px-3 py-2.5">
+              <div key={kpi.label} className="rounded-xl bg-card px-3 py-2.5 neo-inset-sm">
                 <p className="text-[11px] text-muted-foreground">{kpi.label}</p>
-                <p className={cn('mt-0.5 text-lg font-semibold tabular', kpi.tone)}>{kpi.value}</p>
+                <p className={cn('mt-0.5 text-lg font-semibold tabular', kpi.tone)}>—</p>
               </div>
             ))}
           </div>
@@ -195,21 +185,21 @@ function HeroMock() {
             ))}
           </div>
         </div>
-        <div className="border-t px-4 py-3">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Live desk</p>
+        <div className="px-4 py-3">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">How the desk works</p>
           <div className="mt-2 min-h-[2.6rem]" aria-live="polite">
-            <p key={index} className={cn('flex items-center justify-between gap-3 rounded-xl bg-muted/70 px-3 py-2 text-[13px]', !reduced && 'ui-swap')}>
+            <p key={index} className={cn('flex items-center justify-between gap-3 rounded-xl bg-card px-3 py-2 text-[13px] neo-inset-sm', !reduced && 'ui-swap')}>
               <span className="truncate">
-                <span className="mr-2 font-mono text-[11px] text-muted-foreground">{feed.time}</span>
+                <span className="mr-2 font-mono text-[11px] text-muted-foreground">{feed.step}</span>
                 {feed.text}
               </span>
               <span className={cn('size-1.5 shrink-0 rounded-full bg-lime-strong', !reduced && 'marketing-pulse')} aria-hidden />
             </p>
           </div>
-          <div className="mt-2 flex items-center justify-between gap-3 rounded-xl bg-peach-soft/60 px-3 py-2.5">
+          <div className="mt-2 flex items-center justify-between gap-3 rounded-xl bg-peach-soft/70 px-3 py-2.5 neo-inset-sm">
             <div className="min-w-0">
-              <p className="truncate text-[13px] font-semibold">INV-48291 · Northstar Ltd</p>
-              <p className="truncate text-xs text-muted-foreground">AI suggests: send corrected invoice with PO-8821</p>
+              <p className="truncate text-[13px] font-semibold">Human approval before any send</p>
+              <p className="truncate text-xs text-muted-foreground">AI drafts the next step. You decide whether it goes out.</p>
             </div>
             <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">Approve</span>
           </div>
@@ -263,7 +253,7 @@ const FAQ = [
   },
   {
     q: 'Do I have to connect Xero to try the desk?',
-    a: 'You can log in with email and work the demo story first. Connect Xero when you are ready to pull live contacts and invoices from your organisation.',
+    a: 'Log in, then connect Xero. Contacts and invoices load from your organisation — the desk does not use sample books.',
   },
   {
     q: 'What happens if an invoice is disputed?',
@@ -303,7 +293,7 @@ export function MarketingHomePage() {
   const { isAuthenticated } = useAuth()
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background">
+    <div className="relative min-h-screen overflow-x-hidden bg-background">
       <MeshBackdrop />
       <div className="relative">
         <ProductNav />
@@ -312,13 +302,13 @@ export function MarketingHomePage() {
           <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
             <div>
               <Reveal>
-                <p className="inline-flex items-center gap-2 rounded-full border bg-card/80 px-3 py-1 text-[12px] font-medium shadow-xs backdrop-blur">
+                <p className="inline-flex items-center gap-2 rounded-full bg-card px-3 py-1 text-[12px] font-medium neo-raised-sm">
                   <Sparkles className="size-3.5 text-lime-strong" aria-hidden />
                   AI accounts receivable for UK SMEs
                 </p>
               </Reveal>
               <Reveal delay={80}>
-                <h1 className="mt-5 max-w-xl text-[2.35rem] font-semibold leading-[1.12] tracking-[-0.035em] sm:text-5xl">
+                <h1 className="font-display mt-5 max-w-xl text-[2.45rem] font-semibold leading-[1.12] tracking-[-0.035em] sm:text-5xl">
                   Get paid faster. <span className="text-muted-foreground">Never let an agent talk to a customer without you.</span>
                 </h1>
               </Reveal>
@@ -353,16 +343,18 @@ export function MarketingHomePage() {
             </Reveal>
           </section>
 
-          <section className="border-y bg-card/60">
-            <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-3 sm:px-6">
+          <section>
+            <div className="mx-auto grid max-w-6xl gap-4 px-4 py-6 sm:grid-cols-3 sm:px-6">
               {[
                 { k: 'Human first', v: 'every outbound action is approved' },
                 { k: 'Xero ready', v: 'connect your organisation when you log in' },
                 { k: 'UK SMEs', v: 'built for finance teams who live in the books' },
               ].map((stat, i) => (
                 <Reveal key={stat.k} delay={i * 90}>
-                  <p className="text-2xl font-semibold tracking-[-0.03em]">{stat.k}</p>
-                  <p className="mt-1 text-[13px] text-muted-foreground">{stat.v}</p>
+                  <div className="rounded-2xl bg-card px-5 py-5 neo-inset-sm">
+                    <p className="font-display text-2xl font-semibold tracking-[-0.03em]">{stat.k}</p>
+                    <p className="mt-1 text-[13px] text-muted-foreground">{stat.v}</p>
+                  </div>
                 </Reveal>
               ))}
             </div>
@@ -371,15 +363,15 @@ export function MarketingHomePage() {
           <section id="product" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20 sm:px-6">
             <Reveal>
               <SectionEyebrow>The problem</SectionEyebrow>
-              <h2 className="mt-2 max-w-2xl text-3xl font-semibold tracking-[-0.03em]">Chasing invoices is slow, awkward, and easy to get wrong.</h2>
+              <h2 className="mt-2 max-w-2xl font-display text-3xl font-semibold tracking-[-0.03em]">Chasing invoices is slow, awkward, and easy to get wrong.</h2>
             </Reveal>
             <div className="mt-10 grid gap-4 md:grid-cols-3">
               {PROBLEMS.map((item, i) => {
                 const Icon = item.icon
                 return (
                   <Reveal key={item.title} delay={i * 80}>
-                    <article className="h-full rounded-2xl border bg-card/90 p-5 transition-transform duration-500 hover:-translate-y-1 hover:shadow-[0_18px_40px_-28px_rgba(20,20,20,0.45)]">
-                      <span className="flex size-9 items-center justify-center rounded-lg bg-muted">
+                    <article className="h-full rounded-2xl bg-card p-5 neo-raised">
+                      <span className="flex size-9 items-center justify-center rounded-xl bg-card neo-inset-sm">
                         <Icon className="size-4" aria-hidden />
                       </span>
                       <h3 className="mt-4 text-[15px] font-semibold">{item.title}</h3>
@@ -391,11 +383,11 @@ export function MarketingHomePage() {
             </div>
           </section>
 
-          <section className="border-y bg-card/80 backdrop-blur-sm">
+          <section>
             <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
               <Reveal>
                 <SectionEyebrow>The desk</SectionEyebrow>
-                <h2 className="mt-2 max-w-2xl text-3xl font-semibold tracking-[-0.03em]">Built like a collections office, not a chatbot.</h2>
+                <h2 className="mt-2 max-w-2xl font-display text-3xl font-semibold tracking-[-0.03em]">Built like a collections office, not a chatbot.</h2>
                 <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
                   Six things the agent actually does — each one leaves a trail you can inspect, edit, or stop.
                 </p>
@@ -405,8 +397,8 @@ export function MarketingHomePage() {
                   const Icon = item.icon
                   return (
                     <Reveal key={item.title} delay={i * 70}>
-                      <article className="h-full rounded-2xl border bg-background/70 p-5">
-                        <span className="flex size-9 items-center justify-center rounded-lg bg-lime-soft text-lime-strong">
+                      <article className="h-full rounded-2xl bg-card p-5 neo-raised">
+                        <span className="flex size-9 items-center justify-center rounded-xl bg-lime-soft text-lime-strong neo-raised-sm">
                           <Icon className="size-4" aria-hidden />
                         </span>
                         <h3 className="mt-4 text-[15px] font-semibold">{item.title}</h3>
@@ -422,7 +414,7 @@ export function MarketingHomePage() {
           <section id="how" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20 sm:px-6">
             <Reveal>
               <SectionEyebrow>What we do</SectionEyebrow>
-              <h2 className="mt-2 max-w-2xl text-3xl font-semibold tracking-[-0.03em]">An investigations desk, not a chatbot.</h2>
+              <h2 className="mt-2 max-w-2xl font-display text-3xl font-semibold tracking-[-0.03em]">An investigations desk, not a chatbot.</h2>
               <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
                 CashFlow OS is built for finance managers who already live in Xero. Connect the organisation, then let the agent do the tedious work: finding missing POs, spotting disputes, and drafting the email you would have written anyway.
               </p>
@@ -434,7 +426,7 @@ export function MarketingHomePage() {
                   <li key={step.title}>
                     <Reveal delay={i * 90}>
                       <div className="flex gap-4">
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground neo-raised-sm">
                           <Icon className="size-4" aria-hidden />
                         </span>
                         <div>
@@ -450,14 +442,14 @@ export function MarketingHomePage() {
             </ol>
           </section>
 
-          <section className="border-y bg-card/80 backdrop-blur-sm">
+          <section>
             <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
               <Reveal>
                 <SectionEyebrow>Compared</SectionEyebrow>
-                <h2 className="mt-2 max-w-2xl text-3xl font-semibold tracking-[-0.03em]">A reminder tool chases. This desk investigates.</h2>
+                <h2 className="mt-2 max-w-2xl font-display text-3xl font-semibold tracking-[-0.03em]">A reminder tool chases. This desk investigates.</h2>
               </Reveal>
               <Reveal delay={80}>
-                <div className="mt-10 overflow-hidden rounded-2xl border bg-background/70">
+                <div className="mt-10 overflow-hidden rounded-3xl bg-card neo-raised">
                   <table className="w-full text-left text-[13.5px]">
                     <thead className="border-b bg-muted/50 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                       <tr>
@@ -486,7 +478,7 @@ export function MarketingHomePage() {
               <div>
                 <Reveal>
                   <SectionEyebrow>Designed to be trusted</SectionEyebrow>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em]">The agent is a junior. You stay the manager.</h2>
+                  <h2 className="mt-2 font-display text-3xl font-semibold tracking-[-0.03em]">The agent is a junior. You stay the manager.</h2>
                   <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-muted-foreground">
                     Late-payment reasons are labelled “AI-identified likely reason”. Evidence sits in its own cards, separate from the conclusion. Nothing is sent until a person clicks Approve.
                   </p>
@@ -512,7 +504,7 @@ export function MarketingHomePage() {
                     const Icon = item.icon
                     return (
                       <Reveal key={item.label} delay={120 + i * 70}>
-                        <p className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2.5 text-[13px] font-medium">
+                        <p className="flex items-center gap-2 rounded-xl bg-card px-3 py-2.5 text-[13px] font-medium neo-raised-sm">
                           <Icon className="size-4 text-lime-strong" aria-hidden />
                           {item.label}
                         </p>
@@ -522,17 +514,17 @@ export function MarketingHomePage() {
                 </div>
               </div>
               <Reveal delay={120}>
-                <div className="rounded-2xl border bg-card p-6 shadow-[0_18px_40px_-28px_rgba(20,20,20,0.4)]">
+                <div className="rounded-3xl bg-card p-6 neo-raised">
                   <p className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    <ShieldCheck className="size-4" aria-hidden /> Demo story
+                    <ShieldCheck className="size-4" aria-hidden /> What you approve
                   </p>
-                  <p className="mt-4 text-lg font-semibold tracking-[-0.02em]">INV-48291 · Northstar Ltd · £11,200</p>
+                  <p className="mt-4 text-lg font-semibold tracking-[-0.02em]">A draft, not a send</p>
                   <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground">
-                    The invoice has no PO. Northstar’s contract requires one. Hannah emailed asking for it. The agent drafts a corrected invoice with PO-8821 and waits for you.
+                    The agent reads your Xero invoices, hypothesises why one is unpaid, and writes the next step. It waits in the Approval Centre until you edit it, approve it, or reject it.
                   </p>
                   <Button className="mt-6" asChild>
-                    <Link to={isAuthenticated ? `${APP}/invoices/inv-48291` : LOGIN}>
-                      Open this invoice in the desk <ArrowRight />
+                    <Link to={isAuthenticated ? APP : LOGIN}>
+                      {isAuthenticated ? 'Open the collections desk' : 'Log in to connect Xero'} <ArrowRight />
                     </Link>
                   </Button>
                 </div>
@@ -540,17 +532,17 @@ export function MarketingHomePage() {
             </div>
           </section>
 
-          <section id="faq" className="border-y bg-card/80 backdrop-blur-sm">
+          <section id="faq">
             <div className="mx-auto grid max-w-6xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[0.8fr_1.2fr]">
               <Reveal>
                 <SectionEyebrow>FAQ</SectionEyebrow>
-                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em]">Straight answers before you log in.</h2>
+                <h2 className="mt-2 font-display text-3xl font-semibold tracking-[-0.03em]">Straight answers before you log in.</h2>
                 <p className="mt-3 max-w-sm text-[15px] leading-relaxed text-muted-foreground">
                   CashFlow OS is a collections desk with a junior agent. If a question is not here, open the desk and inspect an invoice yourself.
                 </p>
               </Reveal>
               <Reveal delay={80}>
-                <div className="rounded-2xl border bg-background/70 px-5">
+                <div className="rounded-3xl bg-card px-5 neo-raised">
                   {FAQ.map((item) => (
                     <FaqItem key={item.q} q={item.q} a={item.a} />
                   ))}
@@ -559,13 +551,13 @@ export function MarketingHomePage() {
             </div>
           </section>
 
-          <section className="bg-primary text-primary-foreground">
-            <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 py-14 sm:flex-row sm:items-center sm:px-6">
+          <section className="px-4 pb-10 sm:px-6">
+            <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 rounded-3xl bg-primary px-6 py-12 text-primary-foreground neo-convex sm:flex-row sm:items-center sm:px-10">
               <div>
-                <h2 className="text-2xl font-semibold tracking-[-0.03em]">{isAuthenticated ? 'Your collections desk is ready.' : 'Log in and open the collections desk.'}</h2>
+                <h2 className="font-display text-2xl font-semibold tracking-[-0.03em]">{isAuthenticated ? 'Your collections desk is ready.' : 'Log in and open the collections desk.'}</h2>
                 <p className="mt-2 max-w-md text-[14px] text-primary-foreground/70">
                   {isAuthenticated
-                    ? 'Start on Overview, open INV-48291, and approve the next action.'
+                    ? 'Overview shows live Xero invoices. Approvals appear only after you run an investigation.'
                     : 'Use your work email, or continue with Xero to pull live contacts.'}
                 </p>
               </div>
@@ -580,7 +572,7 @@ export function MarketingHomePage() {
           </section>
         </main>
 
-        <footer className="border-t bg-background/80 backdrop-blur">
+        <footer className="bg-background">
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-[1.2fr_1fr_1fr] sm:px-6">
             <div>
               <Logo />
@@ -616,7 +608,7 @@ export function MarketingHomePage() {
               </ul>
             </div>
           </div>
-          <div className="mx-auto flex max-w-6xl flex-col gap-2 border-t px-4 py-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <p>CashFlow OS</p>
             <p>Not affiliated with Xero.</p>
           </div>

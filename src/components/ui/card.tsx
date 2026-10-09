@@ -2,7 +2,7 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 
 function Card({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div data-slot="card" className={cn('flex flex-col rounded-xl border bg-card text-card-foreground', className)} {...props} />
+  return <div data-slot="card" className={cn('flex flex-col rounded-2xl bg-card text-card-foreground neo-raised', className)} {...props} />
 }
 
 function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
@@ -32,7 +32,7 @@ function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div data-slot="card-footer" className={cn('flex items-center border-t px-5 py-3', className)} {...props} />
+  return <div data-slot="card-footer" className={cn('flex items-center px-5 py-3', className)} {...props} />
 }
 
 export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent }

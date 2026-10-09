@@ -11,7 +11,7 @@ import { NAV_SECTIONS } from './nav'
 export function Logo({ to, className }: { to?: string; className?: string }) {
   const mark = (
     <div className={cn('flex items-center gap-2', className)}>
-      <span className="flex size-7 items-end justify-center gap-[3px] rounded-lg bg-primary px-1.5 pb-1.5" aria-hidden>
+      <span className="flex size-8 items-end justify-center gap-[3px] rounded-xl bg-primary px-1.5 pb-1.5 neo-raised-sm" aria-hidden>
         <span className="h-2 w-1 rounded-[1px] bg-sun" />
         <span className="h-3 w-1 rounded-[1px] bg-lime" />
         <span className="h-4 w-1 rounded-[1px] bg-peach" />
@@ -55,8 +55,8 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   onClick={onNavigate}
                   className={({ isActive }) =>
                     cn(
-                      'group flex h-9 items-center gap-2.5 rounded-lg px-3 text-[13.5px] font-medium transition-colors',
-                      isActive ? 'bg-muted text-foreground' : 'text-foreground/70 hover:bg-muted/60 hover:text-foreground',
+                      'group flex h-9 items-center gap-2.5 rounded-xl px-3 text-[13.5px] font-medium transition-[box-shadow,color]',
+                      isActive ? 'bg-card text-foreground neo-inset-sm' : 'text-foreground/70 hover:neo-raised-sm hover:text-foreground',
                     )
                   }
                 >
@@ -75,16 +75,16 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       <div className="space-y-3 p-3">
-        <div className="rounded-xl border bg-muted/50 p-3">
+        <div className="rounded-2xl bg-card p-3 neo-inset-sm">
           <div className="flex items-center justify-between">
             <p className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">Connected</p>
             <span
               className={cn(
                 'inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 py-px text-[10.5px] font-semibold',
-                xeroLive ? 'bg-lime-soft text-lime-strong' : 'bg-sun px-2 text-[#3b3905]',
+                xeroLive ? 'bg-lime-soft text-lime-strong' : 'bg-sun-soft px-2 text-sun-strong',
               )}
             >
-              <span className={cn('size-1.5 rounded-full', xeroLive ? 'bg-lime-strong' : 'bg-[#3b3905]')} aria-hidden />
+              <span className={cn('size-1.5 rounded-full', xeroLive ? 'bg-lime-strong' : 'bg-sun-strong')} aria-hidden />
               {xeroLive ? 'Live' : 'Offline'}
             </span>
           </div>
@@ -118,7 +118,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function Sidebar() {
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 border-r bg-sidebar lg:block">
+    <aside className="fixed inset-y-3 left-3 z-30 hidden w-[14.5rem] overflow-hidden rounded-3xl bg-sidebar neo-raised lg:block">
       <SidebarContent />
     </aside>
   )

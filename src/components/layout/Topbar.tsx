@@ -39,6 +39,9 @@ function NotificationsMenu() {
           )}
         </div>
         <DropdownMenuSeparator />
+        {notifications.length === 0 ? (
+          <p className="px-2 py-6 text-center text-[13px] text-muted-foreground">No notifications yet.</p>
+        ) : null}
         {notifications.map((n) => (
           <DropdownMenuItem
             key={n.id}
@@ -67,7 +70,7 @@ export function Topbar() {
   const navigate = useNavigate()
 
   return (
-    <header className="sticky top-0 z-20 border-b bg-background/85 backdrop-blur">
+    <header className="sticky top-0 z-20 isolate bg-background">
       <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileNav(true)} aria-label="Open navigation">
           <Menu />
@@ -94,7 +97,7 @@ export function Topbar() {
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button type="button" className="flex items-center gap-2.5 rounded-lg border bg-card py-1 pl-1 pr-3 shadow-xs hover:bg-accent" aria-label="Account menu">
+              <button type="button" className="flex items-center gap-2.5 rounded-2xl bg-card py-1 pl-1 pr-3 neo-raised-sm hover:neo-convex" aria-label="Account menu">
                 <Avatar className="size-7">
                   <AvatarFallback className="bg-lime-soft text-[11px] text-lime-strong">{initials(currentUser.name)}</AvatarFallback>
                 </Avatar>

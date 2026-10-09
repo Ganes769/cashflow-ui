@@ -1,17 +1,30 @@
-import type { CollectionPoint, CollectionRange, LateReasonStat, MonthlyMetric, OverviewSummary, RiskBucket } from '@/types'
+import type { CollectionPoint, CollectionRange, LateReason, LateReasonStat, MonthlyMetric, OverviewSummary, RiskBucket } from '@/types'
 import { calendarToday, daysOverdue } from '@/lib/dates'
-import { lateReasons, monthlyMetrics, previousMonth } from '@/data/analytics'
 import { db } from './mockDb'
 import { getInvoices, isOverdue, isUnpaid } from './invoiceService'
 
 const round1 = (n: number) => Math.round(n * 10) / 10
+
+function previousMonthKey(month: string) {
+  const [year, m] = month.split('-').map(Number)
+  if (!year || !m) return month
+  return m === 1 ? `${year - 1}-12` : `${year}-${String(m - 1).padStart(2, '0')}`
+}
+
+function monthLabel(key: string) {
+  const [year, m] = key.split('-').map(Number)
+  if (!year || !m) return key
+  return new Date(year, m - 1, 1).toLocaleString('en-GB', { month: 'short' })
+}
 
 export async function getOverview(): Promise<OverviewSummary> {
   const invoices = await getInvoices()
   const unpaid = invoices.filter(isUnpaid)
   const overdue = unpaid.filter(isOverdue)
   const month = calendarToday().slice(0, 7)
+  const lastMonth = previousMonthKey(month)
   const recovered = invoices.filter((i) => i.paidDate?.startsWith(month)).reduce((sum, i) => sum + i.amount, 0)
+  const recoveredLast = invoices.filter((i) => i.paidDate?.startsWith(lastMonth)).reduce((sum, i) => sum + i.amount, 0)
   const avgDays = overdue.length ? overdue.reduce((sum, i) => sum + daysOverdue(i.dueDate, calendarToday()), 0) / overdue.length : 0
   const pending = db.approvals.filter((a) => a.status === 'pending')
   const outstanding = unpaid.reduce((sum, i) => sum + i.amountDue, 0)
@@ -22,9 +35,9 @@ export async function getOverview(): Promise<OverviewSummary> {
     overdue: overdue.reduce((sum, i) => sum + i.amountDue, 0),
     overdueCount: overdue.length,
     recoveredThisMonth: recovered,
-    recoveredChangePct: recovered === 0 ? 0 : previousMonth.recovered ? round1(((recovered - previousMonth.recovered) / previousMonth.recovered) * 100) : 0,
+    recoveredChangePct: recoveredLast === 0 ? 0 : round1(((recovered - recoveredLast) / recoveredLast) * 100),
     averageDaysOverdue: round1(avgDays),
-    averageDaysOverdueChange: overdue.length === 0 ? 0 : round1(round1(avgDays) - previousMonth.averageDaysOverdue),
+    averageDaysOverdueChange: 0,
     aiActions: db.agentStats.runsToday,
     aiActionsAutomatic: db.agentStats.automatedActions,
     pendingApprovals: pending.length,
@@ -57,5 +70,38 @@ export async function getRiskDistribution(): Promise<RiskBucket[]> {
 }
 
 export async function getAnalytics(): Promise<{ monthly: MonthlyMetric[]; lateReasons: LateReasonStat[] }> {
-  return { monthly: monthlyMetrics, lateReasons }
+  const invoices = await getInvoices()
+  const today = calendarToday().slice(0, 7)
+  const keys: string[] = []
+  let cursor = today
+  for (let i = 0; i < 6; i += 1) {
+    keys.unshift(cursor)
+    cursor = previousMonthKey(cursor)
+  }
+
+  const monthly: MonthlyMetric[] = keys.map((key) => {
+    const paid = invoices.filter((i) => i.paidDate?.startsWith(key))
+    const recovered = paid.reduce((sum, i) => sum + i.amount, 0)
+    const issued = invoices.filter((i) => i.invoiceDate.startsWith(key))
+    const issuedTotal = issued.reduce((sum, i) => sum + i.amount, 0)
+    const days = paid.map((i) => (i.paidDate ? daysOverdue(i.dueDate, i.paidDate) : 0))
+    const avg = days.length ? days.reduce((sum, d) => sum + d, 0) / days.length : 0
+    return {
+      month: monthLabel(key),
+      recoveryRate: issuedTotal ? round1((recovered / issuedTotal) * 100) : 0,
+      avgCollectionDays: round1(Math.max(0, avg)),
+      automationRate: 0,
+      humanInterventionRate: 0,
+      recovered,
+    }
+  })
+
+  const reasonCounts = new Map<LateReason, number>()
+  for (const investigation of db.investigations) {
+    if (!investigation.likelyReason) continue
+    reasonCounts.set(investigation.likelyReason, (reasonCounts.get(investigation.likelyReason) ?? 0) + 1)
+  }
+  const lateReasons: LateReasonStat[] = [...reasonCounts.entries()].map(([reason, count]) => ({ reason, count }))
+
+  return { monthly, lateReasons }
 }
