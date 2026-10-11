@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardTitle } from '@/components/ui/card'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { ConnectXeroButton } from '@/components/auth/ConnectXeroButton'
-import { SyncNowButton, XeroLiveBadge } from '@/components/xero/XeroLiveBadge'
+import { SyncNowButton, XeroLiveBadge, XeroSyncErrorBanner } from '@/components/xero/XeroLiveBadge'
 import { cn } from '@/lib/utils'
 
 export function XeroPage() {
@@ -55,9 +55,7 @@ export function XeroPage() {
         </Card>
       </div>
 
-      {last?.error ? (
-        <Card className="border-coral/40 bg-coral-soft/40 p-4 text-[13px] text-coral">{last.error}</Card>
-      ) : null}
+      <XeroSyncErrorBanner />
 
       <Card className="p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

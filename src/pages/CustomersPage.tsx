@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState, ErrorState, LoadingRows } from '@/components/shared/states'
 import { ConnectXeroButton } from '@/components/auth/ConnectXeroButton'
-import { SyncNowButton, XeroLiveBadge } from '@/components/xero/XeroLiveBadge'
+import { SyncNowButton, XeroLiveBadge, XeroSyncErrorBanner } from '@/components/xero/XeroLiveBadge'
 
 export function CustomersPage() {
   const [query, setQuery] = useState('')
@@ -43,6 +43,8 @@ export function CustomersPage() {
           </div>
         }
       />
+
+      <XeroSyncErrorBanner />
 
       {!connected && !contacts.length && !isLoading && !error ? (
         <Card>

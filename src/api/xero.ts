@@ -1,4 +1,4 @@
-import { apiClient } from './client'
+import { apiClient, ApiError } from './client'
 import {
   DB_TEST_PATH,
   XERO_CONTACTS_PATH,
@@ -15,6 +15,7 @@ import type {
   DbTest,
   XeroContactsResponse,
   XeroInvoicesResponse,
+  XeroLastSync,
   XeroSetup,
   XeroStatus,
   XeroSyncResponse,
@@ -24,16 +25,33 @@ import type {
 } from './types'
 
 const LONG_PULL = { timeout: 120_000 }
+const SYNC_WAIT_MS = 180_000
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, ms)
+  })
+}
+
+async function fetchStatus(): Promise<XeroStatus> {
+  const { data } = await apiClient.get<XeroStatus>(XERO_STATUS_PATH, {
+    headers: { Accept: 'application/json' },
+  })
+  return data
+}
+
+function assertSyncOk(last: XeroLastSync | null | undefined): XeroLastSync {
+  if (!last) throw new ApiError('Sync finished but the API did not return sync details.', 502)
+  if (last.status === 'error' || last.error) {
+    throw new ApiError(last.error ?? 'Xero sync failed.', 502)
+  }
+  return last
+}
 
 export const xeroApi = {
   /** GET /xero/login/url — never call GET /xero/login from the SPA (it redirects). */
   loginUrl: fetchSanitizedAuthorizeUrl,
-  status: async (): Promise<XeroStatus> => {
-    const { data } = await apiClient.get<XeroStatus>(XERO_STATUS_PATH, {
-      headers: { Accept: 'application/json' },
-    })
-    return data
-  },
+  status: fetchStatus,
   setup: async (): Promise<XeroSetup> => {
     const { data } = await apiClient.get<XeroSetup>(XERO_SETUP_PATH)
     return data
@@ -77,12 +95,51 @@ export const xeroApi = {
     const [contacts, invoices] = await Promise.all([xeroApi.contactsAll(), xeroApi.invoicesAll()])
     return { contacts: contacts.count, invoices: invoices.count }
   },
-  sync: async (full = true): Promise<XeroSyncResponse> => {
-    const { data } = await apiClient.post<XeroSyncResponse>(XERO_SYNC_PATH, null, {
-      params: { full },
-      ...LONG_PULL,
-    })
-    return data
+  /**
+   * POST /xero/sync — triggers a pull from Xero into the synced store.
+   * Uses `wait=true` when supported, then polls /xero/status until last_sync updates.
+   */
+  sync: async (options?: { full?: boolean; wait?: boolean }): Promise<XeroLastSync> => {
+    const full = options?.full ?? false
+    const wait = options?.wait ?? true
+    const beforeFinished = (await fetchStatus()).last_sync?.finished_at ?? null
+
+    try {
+      const { data } = await apiClient.post<XeroSyncResponse>(XERO_SYNC_PATH, {}, {
+        params: { full, wait },
+        timeout: wait ? SYNC_WAIT_MS : LONG_PULL.timeout,
+      })
+      if (data.error) throw new ApiError(String(data.error), 502)
+      if (data.contacts_stored !== undefined || data.invoices_stored !== undefined) {
+        return assertSyncOk({
+          status: data.status ?? 'ok',
+          mode: data.mode,
+          contacts_stored: data.contacts_stored,
+          invoices_stored: data.invoices_stored,
+          finished_at: data.finished_at ?? new Date().toISOString(),
+          error: data.error ?? null,
+        })
+      }
+    } catch (error) {
+      if (!wait) throw error
+    }
+
+    const deadline = Date.now() + 90_000
+    while (Date.now() < deadline) {
+      await sleep(2_000)
+      const last = (await fetchStatus()).last_sync
+      if (last?.finished_at && last.finished_at !== beforeFinished) {
+        return assertSyncOk(last)
+      }
+    }
+
+    const last = (await fetchStatus()).last_sync
+    if (last?.finished_at && last.finished_at !== beforeFinished) return assertSyncOk(last)
+    if (last?.error) throw new ApiError(last.error, 502)
+    throw new ApiError(
+      'Sync did not finish in time. If Xero returned 403, log in with Xero again and confirm accounting.contacts.read and accounting.invoices.read are enabled.',
+      504,
+    )
   },
   syncedContacts: async (): Promise<XeroSyncedContactsResponse> => {
     const { data } = await apiClient.get<XeroSyncedContactsResponse>(XERO_SYNCED_CONTACTS_PATH)

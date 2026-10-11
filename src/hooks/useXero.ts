@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { xeroApi } from '@/api/xero'
 import { queryKeys } from '@/hooks/queries'
 
@@ -75,7 +76,17 @@ function invalidateLive(client: ReturnType<typeof useQueryClient>) {
 export function useXeroSync() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: () => xeroApi.sync(true),
+    mutationFn: () => xeroApi.sync({ full: false, wait: true }),
+    onSuccess: (last) => {
+      toast.success('Xero sync complete', {
+        description: `${last.contacts_stored ?? 0} contacts · ${last.invoices_stored ?? 0} invoices stored`,
+      })
+    },
+    onError: (error) => {
+      toast.error('Xero sync failed', {
+        description: error instanceof Error ? error.message : 'Try reconnecting Xero from the Xero page.',
+      })
+    },
     onSettled: () => invalidateLive(client),
   })
 }
