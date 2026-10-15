@@ -1,8 +1,10 @@
+import { useMemo } from 'react'
 import { Link, useParams } from 'react-router'
 import { ArrowLeft, FileQuestion, Loader2, ScanSearch, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 import { useInvoice } from '@/hooks/queries'
 import { useInvestigateStream } from '@/hooks/useInvestigateStream'
+import { mapInvestigationEmail } from '@/lib/investigationEmail'
 import { NotFoundError } from '@/services/mockDb'
 import { formatDate, formatMoney } from '@/lib/format'
 import { Button } from '@/components/ui/button'
@@ -12,12 +14,17 @@ import { EmptyState, ErrorState, LoadingBlock } from '@/components/shared/states
 import { CommunicationTimeline } from '@/components/shared/CommunicationTimeline'
 import { InvoiceInfoPanel } from '@/components/invoice/InvoiceInfoPanel'
 import { InvestigationPanel } from '@/components/invoice/InvestigationPanel'
+import { InvestigationEmailCard } from '@/components/invoice/InvestigationEmailCard'
 import { AgentStatusPanel } from '@/components/invoice/AgentStatusPanel'
 
 export function InvoiceDetailPage() {
   const { invoiceId = '' } = useParams()
   const { data, isLoading, error, refetch } = useInvoice(invoiceId)
   const stream = useInvestigateStream(data?.invoice.invoiceNumber ?? '', data?.invoice.customerName ?? '')
+  const emailDraft = useMemo(() => {
+    if (!stream.result || stream.investigating) return null
+    return mapInvestigationEmail(stream.result)
+  }, [stream.investigating, stream.result])
 
   const runInvestigate = () => {
     stream.investigate()
@@ -98,6 +105,7 @@ export function InvoiceDetailPage() {
             investigating={stream.investigating}
             onInvestigate={runInvestigate}
           />
+          {emailDraft ? <InvestigationEmailCard draft={emailDraft} /> : null}
           <Card>
             <CardHeader>
               <CardTitle>Invoice timeline</CardTitle>

@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { buildInvestigateRequest, streamInvestigation, type InvestigateStreamStepPayload } from '@/api/investigate'
+import {
+  buildInvestigateRequest,
+  streamInvestigation,
+  type InvestigateStreamResultPayload,
+  type InvestigateStreamStepPayload,
+} from '@/api/investigate'
 
 export interface StreamInvestigationStep {
   key: string
@@ -26,7 +31,7 @@ function sortSteps(steps: StreamInvestigationStep[]) {
 
 export function useInvestigateStream(invoiceNumber: string, customerName: string) {
   const [steps, setSteps] = useState<StreamInvestigationStep[]>([])
-  const [result, setResult] = useState<string | null>(null)
+  const [result, setResult] = useState<InvestigateStreamResultPayload | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [investigating, setInvestigating] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
@@ -56,7 +61,7 @@ export function useInvestigateStream(invoiceNumber: string, customerName: string
           setSteps((prev) => sortSteps(upsertStep(prev, payload)))
         },
         onResult: (payload) => {
-          setResult(payload.response)
+          setResult(payload)
           setInvestigating(false)
         },
         onError: (message) => {

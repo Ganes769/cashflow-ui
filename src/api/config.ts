@@ -25,6 +25,7 @@ export const XERO_WEBHOOK_EVENTS_PATH = '/xero/webhooks/events'
 export const XERO_SYNCED_CONTACTS_PATH = '/xero/synced/contacts'
 export const XERO_SYNCED_INVOICES_PATH = '/xero/synced/invoices'
 export const INVESTIGATE_STREAM_PATH = '/investigate/stream'
+export const INVESTIGATE_SEND_PATH = '/investigate/send'
 
 export function apiUrl(path: string): string {
   const normalised = path.startsWith('/') ? path : `/${path}`

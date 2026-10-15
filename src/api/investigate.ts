@@ -22,8 +22,16 @@ export interface InvestigateStreamStepPayload {
   tool: string
 }
 
+export type CollectionStatus = 'OVERDUE' | 'DUE_TODAY' | 'DUE_SOON' | 'OPEN' | 'PAID' | 'DRAFT'
+
+/** Matches the API `result` SSE payload from POST /investigate/stream. */
 export interface InvestigateStreamResultPayload {
   response: string
+  email: string | null
+  customer: string | null
+  invoice_number: string | null
+  collection_status: CollectionStatus | null
+  can_send: boolean
 }
 
 export interface InvestigateStreamHandlers {
@@ -91,10 +99,24 @@ function dispatchSSE(message: SSEMessage, handlers: InvestigateStreamHandlers) {
   if (inferred === 'result') {
     const payload = parseJsonData<InvestigateStreamResultPayload>(raw)
     if (payload && typeof payload.response === 'string') {
-      handlers.onResult(payload)
+      handlers.onResult({
+        response: payload.response,
+        email: typeof payload.email === 'string' && payload.email ? payload.email : null,
+        customer: payload.customer ?? null,
+        invoice_number: payload.invoice_number ?? null,
+        collection_status: payload.collection_status ?? null,
+        can_send: payload.can_send === true,
+      })
       return
     }
-    handlers.onResult({ response: raw })
+    handlers.onResult({
+      response: raw,
+      email: null,
+      customer: null,
+      invoice_number: null,
+      collection_status: null,
+      can_send: false,
+    })
     return
   }
 
